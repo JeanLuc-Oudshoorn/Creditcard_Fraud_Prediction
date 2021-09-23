@@ -3,8 +3,10 @@ library(yardstick)
 library(ranger)
 library(gbm)
 library(dplyr)
+library(MLmetrics)
 
 
+#checking for problems with the dataset
 summary(cc)
 sum(is.na(cc))
 table(cc$Class)
@@ -13,31 +15,30 @@ cc$Class <- as.factor(cc$Class)
 levels(cc$Class)[levels(cc$Class)=="0"] <- "regular"
 levels(cc$Class)[levels(cc$Class)=="1"] <- "fraud"
 
-folds <- createMultiFolds(cc$Class, k = 4, times = 3)
 
-
+#running traincontrol object
 control <- trainControl(
   
   method = "adaptive_cv",
+  number = 3,
   adaptive = list(min = 3,
                   alpha = 0.05,
                   method = "gls",
-                  complete = TRUE),
-  summaryFunction = twoClassSummary,
+                  complete = FALSE),
+  summaryFunction = prSummary,
   classProbs = TRUE,
   verboseIter = TRUE,
-  index = folds,
   search = "random"
 )
 
-
+#Random Forest Model
 rfmodel <- train(
  
   Class ~ .,
   data = cc,
-  metric = "pr_auc",
+  metric = "PRAUC",
   method = "ranger",
-  tuneLength = 4,
+  tuneLength = 20,
   trControl = control,
   
 )
@@ -48,15 +49,14 @@ plot(rfmodel,
      plotType = "level")
 
 
-##GBM model 
-
+#Gradient Boosting Machine 
 gbmmodel <- train(
   
   Class ~ .,
   data = cc,
-  metric = "ROC",
+  metric = "PRAUC",
   method = "gbm",
-  tuneLength = 2,
+  tuneLength = 20,
   trControl = control,
   
 )
@@ -67,6 +67,7 @@ plot(gbmmodel,
      plotType = "level")
 
 
+#Final model evaluations
 model_list <- list(
   rf = rfmodel,
   gbm = gbmmodel
@@ -76,10 +77,9 @@ resampled <- resamples(model_list)
 
 summary(resampled)
 
-bwplot(resampled, metric = "ROC")
+bwplot(resampled, metric = "PRAUC")
 
-densityplot(resampled, metric = "ROC")
+densityplot(resampled, metric = "PRAUC")
 
-xyplot(resampled, metric = "ROC")
-
+xyplot(resampled, metric = "PRAUC")
 
