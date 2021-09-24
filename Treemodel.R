@@ -20,7 +20,7 @@ levels(cc$Class)[levels(cc$Class)=="1"] <- "fraud"
 control <- trainControl(
   
   method = "adaptive_cv",
-  number = 3,
+  number = 4,
   adaptive = list(min = 3,
                   alpha = 0.05,
                   method = "gls",
@@ -31,6 +31,7 @@ control <- trainControl(
   search = "random"
 )
 
+tic()
 #Random Forest Model
 rfmodel <- train(
  
@@ -38,10 +39,12 @@ rfmodel <- train(
   data = cc,
   metric = "PRAUC",
   method = "ranger",
-  tuneLength = 20,
+  tuneLength = 30,
   trControl = control,
   
 )
+toc()
+
 
 pr_curve(rfmodel)
 plot(rfmodel,
@@ -56,7 +59,7 @@ gbmmodel <- train(
   data = cc,
   metric = "PRAUC",
   method = "gbm",
-  tuneLength = 20,
+  tuneLength = 30,
   trControl = control,
   
 )
