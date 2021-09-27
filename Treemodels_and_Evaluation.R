@@ -43,7 +43,7 @@ rfmodel <- train(
  
   Class ~ .,
   data = cc,
-  metric = "PRAUC",
+  metric = "F",
   method = "ranger",
   tuneLength = 20,
   trControl = control,
@@ -59,7 +59,7 @@ gbmmodel <- train(
   
   Class ~ .,
   data = cc,
-  metric = "PRAUC",
+  metric = "F",
   method = "gbm",
   tuneLength = 20,
   trControl = control,
